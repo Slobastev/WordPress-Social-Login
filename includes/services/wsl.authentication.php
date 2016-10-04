@@ -294,6 +294,26 @@ function wsl_process_login_end()
 	if( ! $user_id ){
 		$user_id = wsl_process_login_create_wp_user( $provider, $hybridauth_user_profile, $request_user_login, $request_user_email );
 
+		/*Sloba addon to create a site for a user*/
+		$parts = explode("@", $requested_user_email);
+		$username = str_replace(".","-",$parts[0]);
+		$current_site = get_current_site();
+		$domain = strtolower( $username );
+		$newdomain = $current_site->domain;
+		$path      = $current_site->path . $domain . '/';
+		$title = "{$username} Title";
+		// $user_id = email_exists($email);
+		$meta = array(
+			'public' => 1
+		);
+		
+		//creating a site
+		wpmu_create_blog( $newdomain, $path, $title, $user_id, $meta, $current_site->id );
+		
+		//removing a user as a subscriber from the main site 
+		remove_user_from_blog($user_id, '1');		
+		/*End of Sloba addon*/
+		
 		$is_new_user = true;
 	}
 
